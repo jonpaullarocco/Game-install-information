@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Escape Room Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg, #fff);
+            color: var(--text, #000);
+            margin: 2em;
+        }
+        .result {
+            margin-top: 1.5em;
+            padding: 10px;
+            border-bottom: 1px solid var(--border, #ccc);
+        }
+        .meta {
+            font-size: 0.9em;
+            color: #555;
+        }
+        .snippet {
+            margin-top: 0.5em;
+            display: none;
+        }
+        .toggle-btn {
+            color: blue;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .tab-content {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .tab-button {
+            margin: 0 5px 5px 0;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            font-weight: bold;
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Escape Room Search Tool</h1>
+
+    <form method="get">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search term..." />
+        <select name="game">
+            <option value="">All Games</option>
+            {% for game in games %}
+                <option value="{{ game }}" {% if selected_game == game %}selected{% endif %}>{{ game }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if selected_game %}
+    <div style="text-align:center; font-size:1.8em; margin:1em 0;">
+        Current Game: {{ selected_game }}{% if query %} | Search: "{{ query }}"{% endif %}
+        <a href="/" style="font-size:0.6em; margin-left:1em;">Clear Filter</a>
+    </div>
+    {% endif %}
+
+    {% if results %}
+        <h2>Results ({{ results|length }}) for: "{{ query }}"</h2>
+        {% for res in results %}
+            <div class="result">
+                <strong>{{ res.file_name }}</strong>
+                <div class="meta">Game: {{ res.game }}<br/>Room: {{ res.room }}<br/>Puzzle: {{ res.puzzle }}</div>
+                <div class="toggle-btn" onclick="toggleSnippet('snippet_{{ loop.index }}')">Show/Hide Snippet</div>
+                <div class="snippet" id="snippet_{{ loop.index }}"><em>{{ res.snippet }}</em></div>
+            </div>
+        {% endfor %}
+    {% elif query %}
+        <p>No results found for '{{ query }}'.</p>
+    {% endif %}
+
+    <footer style="margin-top: 2em; padding-top: 1em; border-top: 1px solid #ccc;">
+        <strong>Available Files:</strong>
+        <ul style="padding: 0; list-style: none;">
+        {% for file in results|map(attribute='file_name')|unique %}
+            <li>
+                <button class="tab-button" id="btn_tab_{{ loop.index }}" onclick="toggleTab('tab_{{ loop.index }}')">
+                    📄 {{ file }}
+                </button>
+                <div id="tab_{{ loop.index }}" class="tab-content">
+                    <iframe id="viewer_{{ loop.index }}" src="/static/{{ file }}#zoom=150" width="100%" height="600px" style="border:1px solid #ccc;"></iframe>
+                    <div style="margin-top: 5px;">
+                        <label for="zoom_{{ loop.index }}">Zoom:</label>
+                        <select id="zoom_{{ loop.index }}" onchange="updateZoom({{ loop.index }}, this.value)">
+                            <option value="100">100%</option>
+                            <option value="125">125%</option>
+                            <option value="150" selected>150%</option>
+                            <option value="175">175%</option>
+                            <option value="200">200%</option>
+                        </select>
+                        <button onclick="toggleFullscreen('viewer_{{ loop.index }}')">Fullscreen</button>
+                    </div>
+                </div>
+            </li>
+        {% endfor %}
+        </ul>
+    </footer>
+
+    <script>
+        function toggleSnippet(id) {
+            const el = document.getElementById(id);
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleTab(tabId) {
+            const content = document.getElementById(tabId);
+            const button = document.querySelector(`button[onclick*="${tabId}"]`);
+            const openTabs = JSON.parse(localStorage.getItem('openTabs') || '[]');
+            if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                content.style.maxHeight = '0';
+                if (button) button.classList.remove('active');
+                const index = openTabs.indexOf(tabId);
+                if (index !== -1) openTabs.splice(index, 1);
+            } else {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                if (button) button.classList.add('active');
+                if (!openTabs.includes(tabId)) openTabs.push(tabId);
+            }
+            localStorage.setItem('openTabs', JSON.stringify(openTabs));
+        }
+
+        function updateZoom(index, level) {
+            const viewer = document.getElementById(`viewer_${index}`);
+            const src = viewer.src.split('#')[0];
+            viewer.src = `${src}#zoom=${level}`;
+        }
+
+        function toggleFullscreen(id) {
+            const el = document.getElementById(id);
+            if (el.requestFullscreen) el.requestFullscreen();
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            else if (el.msRequestFullscreen) el.msRequestFullscreen();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const openTabs = JSON.parse(localStorage.getItem('openTabs') || '[]');
+            openTabs.forEach(tabId => {
+                const content = document.getElementById(tabId);
+                const button = document.querySelector(`button[onclick*="${tabId}"]`);
+                if (content && button) {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    button.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
