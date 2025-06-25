@@ -1,0 +1,9 @@
+[
+  {
+    "game": "Scooby-Doo",
+    "puzzle": "Magic Books",
+    "short_solution": "Order Table:\nFred \u2192 Dusty Rapps \u2192 Ghosts & their Mummies\nVelma \u2192 Ima Jeaning \u2192 Chasing Fantasies\nScooby \u2192 Isa Ghoul \u2192 Art of the Scare\nShaggy \u2192 Char Lee Robert \u2192 Welcome to Funland\nDaphne \u2192 Anita Rest \u2192 Spooktacular Vacations",
+    "long_solution": "Located in the Library is a bookcase with a row of \u2018hinged\u2019 books. Each is labeled with a different book title that matches the ones listed in Velma\u2019s character clue. Complete the magic book sequence by pulling each hinged book forward in the order gathered from steps 1 & 2. For example, Fred is the first character clue leading to \u2018Ghosts and Their Mummies\u2019, which is the first book in the sequence.",
+    "search_blob": "scooby-doo magic books fred dusty rapps velma ima jeaning scooby isa ghoul daphne anita rest ghosts and their mummies chasing fantasies welcome to funland spooktacular vacations bookcase library"
+  }
+]

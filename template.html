@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Escape Room Search Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- ✅ PWA + Installable App Support -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#333333">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        .result { margin-top: 1.5em; padding: 10px; border-bottom: 1px solid #ccc; }
+        .snippet { margin-top: 0.5em; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>Escape Room Search Tool</h1>
+    <form method="get">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search...">
+        <select name="game">
+            <option value="">All Games</option>
+            {% for game in games %}
+                <option value="{{ game }}" {% if selected_game == game %}selected{% endif %}>{{ game }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if results %}
+        <h2>Results ({{ results|length }})</h2>
+        {% for res in results %}
+            <div class="result">
+                <strong>{{ res.file_name }}</strong>
+                <div class="snippet">{{ res.snippet }}</div>
+            </div>
+        {% endfor %}
+    {% elif query %}
+        <p>No results found for "{{ query }}".</p>
+    {% endif %}
+
+    <!-- ✅ Service Worker Registration -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/service-worker.js")
+          .then(() => console.log("✅ Service Worker registered"))
+          .catch(err => console.error("❌ Service Worker failed", err));
+      }
+    </script>
+</body>
+</html>
